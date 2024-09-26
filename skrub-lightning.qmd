@@ -1,0 +1,111 @@
+---
+title: "Skrub"
+author: "Jérôme Dockès"
+format: revealjs
+template-partials:
+    - title-slide.html
+---
+
+## {.center}
+
+:::{.r-fit-text}
+- Machine-learning estimators expect numeric arrays
+- Real data is usually more complex:
+  - Multiple tables
+  - Dates, categories, text, locations, …
+:::
+
+## {.center}
+```{.python code-line-numbers="|3-6"}
+X, y = load_employee_salaries()
+
+hired_date = pd.to_datetime(X["date_first_hired"]) # "%m/%d/%Y"
+X = X.assign(year=hired_date.dt.year, month=hired_date.dt.month)
+# … a lot more of this
+
+model = HistGradientBoostingRegressor().fit(X, y)
+```
+
+<br/>
+
+## {.center}
+
+:::{.r-fit-text}
+```{.python .stretch}
+if pd.__version__ >= ... :
+    # 🤷 🙄 😭
+```
+:::
+
+## {.center}
+
+```{.python}
+X, y = load_employee_salaries()
+
+hired_date = pd.to_datetime(X["date_first_hired"]) # "%m/%d/%Y"
+X = X.assign(year=hired_date.dt.year, month=hired_date.dt.month)
+# … a lot more of this
+
+model = HistGradientBoostingRegressor().fit(X, y)
+pickle.dump(model, f)
+```
+
+:::{.incremental}
+- Difficulty to package the whole pipeline
+- Apply inconsistent transformations at prediction time
+- Overfit data modelling choices
+- Miss hyperparameter tuning opportunities
+:::
+
+## Data-wrangling in scikit-learn Transformers
+
+:::{.incremental}
+- `GapEncoder`, `MinHashEncoder`
+- `DatetimeEncoder`
+- `Joiner`, `AggJoiner`, `InterpolationJoiner`
+- `SelectCols`, `DropCols`, …
+:::
+
+##
+
+:::{.fragment}
+### `tabular_learner`
+
+```{.python}
+learner = tabular_learner('regressor').fit(df, y)
+```
+:::
+
+<br/>
+
+:::{.fragment}
+### `TableVectorizer`
+
+```{.python}
+X = TableVectorizer().fit_transform(df)
+```
+:::
+
+<br/>
+
+:::{.fragment}
+### `TableReport`
+
+```{.python}
+TableReport(df)
+```
+:::
+
+## {.scrollable}
+
+```{python}
+import sys
+import io
+out = io.StringIO()
+sys.stdout = out
+from skrub import datasets, TableReport
+df = datasets.fetch_employee_salaries().X
+TableReport(df)
+```
+
+## Sprint Tomorrow!
